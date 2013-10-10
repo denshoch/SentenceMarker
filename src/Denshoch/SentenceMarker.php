@@ -34,6 +34,11 @@ class SentenceMarker
      */
     private static $eos = "。";
 
+    /**
+     * pattern which come after full-stop at end of sentence.
+     */
+    private static $closingBracketsReg = "/」|』|）/";
+
     /** name of wrapping element*/
     private $elementName = 'span';
     
@@ -109,14 +114,19 @@ class SentenceMarker
                 //split by eos
                 $mbIndex = mb_strpos($startChild->wholeText, self::$eos, 0, $this->encoding);
                 if ($mbIndex === false || mb_strlen($startChild->wholeText, $this->encoding) === $mbIndex  )   {
-                  $nodesToMerge[] = $startChild;
-                  $nextChild = $startChild->nextSibling;
+                    $nodesToMerge[] = $startChild;
+                    $nextChild = $startChild->nextSibling;
                 } else {
-                  $newTextNode = $startChild->splitText($mbIndex + 1);
-                  $nodesToMerge[] = $startChild;
-                  $this->wrapAll($nodesToMerge);
-                  $nodesToMerge = array();
-                  $nextChild = $newTextNode;
+                    $nextChar  = mb_substr($startChild->wholeText, $mbIndex + 1, 1, $this->encoding);
+                    if(preg_match(self::$closingBracketsReg, $nextChar)) {
+                        $newTextNode = $startChild->splitText($mbIndex + 2);
+                    } else {
+                        $newTextNode = $startChild->splitText($mbIndex + 1);
+                    }
+                    $nodesToMerge[] = $startChild;
+                    $this->wrapAll($nodesToMerge);
+                    $nodesToMerge = array();
+                    $nextChild = $newTextNode;
                 }
                 break;
             case self::INLINE_NODE:
