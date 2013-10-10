@@ -52,6 +52,10 @@ class SentenceMarkerTest extends PHPUnit_Framework_TestCase
     {
       $this->assertTransformation('complex');
     }
+    public function testClosingBrackets()
+    {
+      $this->assertTransformation('closing-brackets');
+    }
     protected function assertTransformation($fixtureName)
     {
         $sourceFile = $fixtureName . '-before.html';
